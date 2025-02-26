@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fundraising Campaign</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: #f4f4f4;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            max-width: 400px;
+            margin: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .progress-bar {
+            width: 100%;
+            background: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress {
+            height: 20px;
+            background: #4CAF50;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        input, select, button {
+            padding: 10px;
+            width: 80%;
+            margin: 10px 0;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .donor-list {
+            text-align: left;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Support Our Cause</h2>
+        <p>Target: <strong>$10,000</strong></p>
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+        <p>Total Collected: <strong id="total">$0</strong></p>
+        <input type="text" id="donor-name" placeholder="Enter your name (or leave blank for anonymous)">
+        <input type="number" id="donation" placeholder="Enter your donation">
+        <button onclick="addDonation()">Donate</button>
+        <div class="donor-list" id="donor-list"></div>
+        <p><strong>Bank Transfer Details:</strong><br>IBAN: XXXX-XXXX-XXXX-XXXX<br>PayPal: paypal.me/example</p>
+    </div>
+
+    <script>
+        let donations = [];
+        const target = 10000;
+
+        function updateProgress() {
+            let total = donations.reduce((sum, d) => sum + d.amount, 0);
+            document.getElementById("total").innerText = `$${total}`;
+            let percentage = (total / target) * 100;
+            document.getElementById("progress").style.width = percentage + "%";
+        }
+
+        function addDonation() {
+            let name = document.getElementById("donor-name").value || "Anonymous";
+            let amount = parseFloat(document.getElementById("donation").value);
+            
+            if (!isNaN(amount) && amount > 0) {
+                let donorId = Date.now();
+                donations.push({ id: donorId, name, amount });
+                updateProgress();
+                displayDonors();
+                document.getElementById("donation").value = "";
+            }
+        }
+
+        function editDonation(donorId) {
+            let newAmount = parseFloat(prompt("Enter your new donation amount:"));
+            if (!isNaN(newAmount) && newAmount > 0) {
+                let donor = donations.find(d => d.id === donorId);
+                if (donor) {
+                    donor.amount = newAmount;
+                    updateProgress();
+                    displayDonors();
+                }
+            }
+        }
+
+        function displayDonors() {
+            let list = document.getElementById("donor-list");
+            list.innerHTML = "<h3>Donors:</h3>" + donations.map(d => `
+                <p>${d.name}: $${d.amount} 
+                    <button onclick="editDonation(${d.id})">Edit</button>
+                </p>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
