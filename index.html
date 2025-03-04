@@ -49,6 +49,8 @@
         }
     </style>
 </head>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
 <body>
     <div class="container">
         <h2>Support Our Cause</h2>
@@ -87,18 +89,48 @@
                 document.getElementById("donation").value = "";
             }
         }
+function loadDonations() {
+    database.ref('donations/').on('value', (snapshot) => {
+        let donations = [];
+        snapshot.forEach((child) => {
+            donations.push(child.val());
+        });
 
-        function editDonation(donorId) {
-            let newAmount = parseFloat(prompt("Enter your new donation amount:"));
-            if (!isNaN(newAmount) && newAmount > 0) {
-                let donor = donations.find(d => d.id === donorId);
-                if (donor) {
-                    donor.amount = newAmount;
-                    updateProgress();
-                    displayDonors();
-                }
-            }
-        }
+        // Mettre à jour l'affichage
+        displayDonors(donations);
+        updateProgress(donations);
+    });
+}
+
+// Charger les dons au démarrage
+window.onload = loadDonations;
+
+function updateProgress(donations) {
+    let total = donations.reduce((sum, d) => sum + d.amount, 0);
+    document.getElementById("total").innerText = `$${total}`;
+    let percentage = (total / 10000) * 100;
+    document.getElementById("progress").style.width = percentage + "%";
+}
+
+function displayDonors(donations) {
+    let list = document.getElementById("donor-list");
+    list.innerHTML = "<h3>Donors:</h3>" + donations.map(d => `
+        <p>${d.name}: $${d.amount}</p>
+    `).join('');
+}
+       function addDonation() {
+    let name = document.getElementById("donor-name").value || "Anonymous";
+    let amount = parseFloat(document.getElementById("donation").value);
+    
+    if (!isNaN(amount) && amount > 0) {
+        let newDonation = { name, amount };
+
+        // Envoyer la donation à Firebase
+        database.ref('donations/').push(newDonation);
+
+        document.getElementById("donation").value = "";
+    }
+}
 
         function displayDonors() {
             let list = document.getElementById("donor-list");
@@ -109,5 +141,24 @@
             `).join('');
         }
     </script>
+    // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCQ3S855mD656jQPJK_wzfMx9D3WwhpQCI",
+  authDomain: "fundraising-site.firebaseapp.com",
+  projectId: "fundraising-site",
+  storageBucket: "fundraising-site.firebasestorage.app",
+  messagingSenderId: "740231407956",
+  appId: "1:740231407956:web:7c4ee2cf7dd6328b3fc0c1"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 </body>
 </html>
